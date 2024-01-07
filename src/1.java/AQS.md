@@ -31,7 +31,15 @@
 | nextWaiter | 下一个等待者 <img src="image/nextWaiter.png"/> |
 
 ### ConditionObject
-TBD
+os中的同步机制，当一个线程发现条件不满足时主动的阻塞在条件变量上，等待满足条件后其他线程将其唤醒，通常和mutex一起使用（保证检查条件时是同步的）。类比一下lock相当于java中的mutex,co相当于条件变量
+注意lock和co各自维护了一个等待队列。
+
+| 属性/方法     | 描述                                                                                                                   |
+|-----------|----------------------------------------------------------------------------------------------------------------------|
+| signal    | 把条件变量队列中等待时间最长的线程移到当前线程持有的等待队列，意思是这个线程仍在等这个lock的释放。这个方法在当前线程不持有这个互斥锁的时候调用会报错（CO一定是配合写锁使用的，只持读锁是用不了的。因此它作为AQS的非静态内部类） |
+| signalAll | 把所有线程移到锁的等待队列                                                                                                        |
+|await | 一个持有lock的线程释放掉lock并进入co的等待队列。当其他线程调用signal时，这个线程会被移到lock的等待队列                                                        |
+|awaitUntil| 底层是parkUtil，会设置超时时间，超时自动从co的queue移到lock的queue                                                                        |
 
 ## 1.3 关键代码解读
 ### Acquire
@@ -422,6 +430,7 @@ FAQ：
      * propagation. (Note: For exclusive mode, release just amounts
      * to calling unparkSuccessor of head if it needs signal.)
      */
+    // 注：这个方法在releaseShared()和acquireShared调的setHeadAndPropagate中都被调了
     private void doReleaseShared() {
         /*
          * Ensure that a release propagates, even if there are other
@@ -457,10 +466,7 @@ FAQ：
 (B)处：仅看我们的场景，r>0时一定会进入。注意s.isShared()判断的是nextWaiter是否是SHARED
 (C)处：如果是SIGNAL则会唤醒后续的node的线程，否则置为PROPAGATE。注意如果期间head发生变化需要重试
 
-FAQ：
-doReleaseShared()的一些问题，与并发相关：
-1.为啥会有个尝试设置为PROPAGATE的操作？咱未发现用途，不设置或设成任意赋值有什么区别
-2. 为啥头结点改变要继续循环？未知
+最重要的应该是（B）处当前线程获取锁后判断下一个线程如果是共享模式的话，会调doReleaseShared让他获取。
 
 ### releaseShared
 ```java
