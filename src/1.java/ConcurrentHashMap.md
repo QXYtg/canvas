@@ -1,4 +1,4 @@
-# HashMap vs ConcurrentHashMap vs HashTable
+# ConcurrentHashMap vs HashMap vs HashTable
 ## 1. ConcurrentHashMap
 为了并发读写而设计的k-v数据结构，基于hash表、链表和红黑树等数据结构。
 put和get是线程安全的，其中get操作不会阻塞。如果一个put操作在get前结束，则get一定能看到put的结果
