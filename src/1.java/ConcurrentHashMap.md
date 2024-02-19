@@ -632,9 +632,14 @@ modCount: HashMap中用来控制fast-fail的，即如果在迭代过程中集合
 可见get和put操作全部方法粒度上锁定，并且hash冲突全部用链表解决没用红黑树优化
 
 ## 4. 引申：redis
+谈到hash表，不同实现重点是什么？(1) kv支持的类型（2）hash冲突的解决方式（3）扩缩容的方式（4）并发数据结构：读写并发的处理方式
+
 由于redis常用于分布式场景下的kv存储，所以联想可做下对比
 1. redis的键是string，值可以是string、list、hash、set、sorted set中的一种
 2. redis解决hash冲突用的是开链法，没用树结构
-3. redis get和set的并发控制是（redis是单线程的，但如果是一个redis集群的话是如何并发控制的？是否相同key都会路由到同一台机器？）
-3. redis扩容的触发条件是：
-4. redis额外存在缩容操作，触发条件是：
+3. redis get和set无需并发控制因为其对字典的操作是单线程的
+3. redis扩容的触发条件是：BGSAVE或BGREWRITEAOF时元素数量>=5*容量或者非这两操作是>=1。
+4. 扩容初始时分配一张新表，容量是大于当前元素数量最接近的2的整数次幂的数字。
+   扩容操作期间维护一个rehashIndex，每次增删改查操作都会将rehashIndex桶中的所有元素rehash，并自增rehashIndex。
+   每次查询操作会查新老表，查不到查新表；每次写操作只会写新表。
+5. redis hash表存在缩容操作，触发条件是：元素数量小于容量的1/10，其他过程类似
