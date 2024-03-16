@@ -6,7 +6,7 @@ put和get是线程安全的，其中get操作不会阻塞。如果一个put操�
 
 ### 1.1 结构
 这里只展示所有的field:
-<img src="image/CMAP_fields.png"/>
+<img src="../image/CMAP_fields.png"/>
 
 ### 1.2 关键代码解读
 #### 1.2.1 get
@@ -422,7 +422,7 @@ put和get是线程安全的，其中get操作不会阻塞。如果一个put操�
 
 ## 2. HashMap
 ### 2.1 结构
-<img src="image/HMAP_fields.png"/>
+<img src="../image/HMAP_fields.png"/>
 modCount: HashMap中用来控制fast-fail的，即如果在迭代过程中集合被修改了，则会throw ConcurrentModificationException。
 原理是创建迭代器时记录modCount值，执行next或remove操作时如果值变化了则抛异常
 

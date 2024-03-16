@@ -1,13 +1,13 @@
 # BlockingQueue
 他是一个接口！支持并发中的生产者消费者模式。同时还支持其他三组操作。
-<img src="image/bq-operation.png"/>
+<img src="../image/bq-operation.png"/>
 是并发中的生产消费模型的实现，常用于线程池用于存储任务，由线程池中的线程取出执行。
 其有一个类似的兄弟接口BlockingDeque
 继承关系如下：
-<img src="image/bq-继承关系.png"/>
+<img src="../image/bq-继承关系.png"/>
 ## 1. ArrayBlockingQueue
-基于双指针循环数组实现的有界FIFO队列，底层是一个reentrant lock和两个条件变量notEmpty和notFull。put/offer入队操作时若队列满会
-将线程阻塞并放入notFull变量上等待，否则将会signalnotEmpty上的变量。而take/poll则相反。初始话时支持指定线程唤醒是否是公平的，底层由构造
+基于双指针循环数组实现的有界FIFO队列，底层是一个reentrant lock和两个条件变量notEmpty和notFull。put/offer入队操作会获锁，若队列满会
+将线程阻塞并放入notFull变量上等待，否则将会入队并signal notEmpty上的变量取元素。而take/poll则相反。初始话时支持指定线程唤醒是否是公平的，底层由构造
 一个公平/非公平的reentrant lock实现。
 ### 1.1 结构
 ### 1.2 关键代码解读
@@ -93,4 +93,7 @@
 
 ## 4. SynchronousQueue
 任何put操作必须等待对应的一个take操作取走元素，反之亦然，否则会阻塞。类似于go中的无缓冲channel。
+
+## 5. DelayQueue
+无界延时队列，队列中的元素到延时时间后才能被取出。元素需要继承Delayed接口
 
